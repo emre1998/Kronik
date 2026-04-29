@@ -1,0 +1,95 @@
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #080810;
+  color: #e2e8f0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+:root {
+  --bg-0: #080810;
+  --bg-1: #0d0d18;
+  --bg-2: #12121f;
+  --bg-3: #1a1a2e;
+  --border: rgba(255,255,255,0.06);
+  --border-bright: rgba(255,255,255,0.12);
+  --accent: #7c3aed;
+  --accent2: #a855f7;
+  --accent3: #c084fc;
+  --glow: rgba(124,58,237,0.25);
+  --glow-sm: rgba(124,58,237,0.12);
+  --success: #10b981;
+  --success-bg: rgba(16,185,129,0.1);
+  --error: #f43f5e;
+  --error-bg: rgba(244,63,94,0.1);
+  --warning: #f59e0b;
+  --t1: #f8fafc;
+  --t2: #94a3b8;
+  --t3: #475569;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+  100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-in { animation: fadeIn 0.3s ease forwards; }
+.slide-in { animation: slideIn 0.3s ease forwards; }
+
+.pulse-dot {
+  animation: pulse-ring 2s infinite;
+}
+
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input, select, textarea {
+  background: var(--bg-2) !important;
+  border: 1px solid var(--border-bright) !important;
+  border-radius: 10px !important;
+  padding: 11px 14px !important;
+  color: var(--t1) !important;
+  font-size: 14px !important;
+  font-family: 'Inter', sans-serif !important;
+  width: 100% !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--glow-sm) !important;
+  outline: none !important;
+}
+
+input::placeholder, textarea::placeholder { color: var(--t3) !important; }
+
+select option { background: var(--bg-2); }
