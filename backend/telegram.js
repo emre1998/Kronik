@@ -19,7 +19,7 @@ const sendTelegram = async (message) => {
 
 const buildMessage = (job, status, statusCode, duration, response) => {
   const icon = status === 'success' ? '✅' : '❌';
-  const time = new Date().toLocaleString('tr-TR');
+  const time = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
 
   return `${icon} <b>Kronik — ${status === 'success' ? 'Başarılı' : 'Hata'}</b>
 
