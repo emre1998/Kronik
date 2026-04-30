@@ -172,8 +172,8 @@ export default function JobModal({ job, onClose, onSave }) {
                   style={{ ...s.notifyBtn, ...(form.notify_on === opt.value ? s.notifyBtnOn : {}) }}
                   onClick={() => set('notify_on', opt.value)}
                 >
-                  <span style={{ fontSize: 13 }}>{opt.label}</span>
-                  <span style={{ fontSize: 11, color: form.notify_on === opt.value ? '#a78bfa' : 'var(--t3)' }}>{opt.desc}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: form.notify_on === opt.value ? '#e2e8f0' : '#94a3b8' }}>{opt.label}</span>
+                  <span style={{ fontSize: 11, color: form.notify_on === opt.value ? '#a78bfa' : '#64748b' }}>{opt.desc}</span>
                 </button>
               ))}
             </div>
