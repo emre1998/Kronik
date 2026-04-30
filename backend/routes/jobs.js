@@ -19,7 +19,7 @@ router.get('/:id', async (req, res) => {
 
 // POST create job
 router.post('/', async (req, res) => {
-  const { name, url, method = 'GET', headers = {}, body, cron_expression, is_active = true } = req.body;
+  const { name, url, method = 'GET', headers = {}, body, cron_expression, is_active = true, notify_on = 'always' } = req.body;
 
   if (!name || !url || !cron_expression) {
     return res.status(400).json({ error: 'name, url and cron_expression are required' });
@@ -29,9 +29,9 @@ router.post('/', async (req, res) => {
   }
 
   const { rows } = await pool.query(
-    `INSERT INTO cron_jobs (name, url, method, headers, body, cron_expression, is_active)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-    [name, url, method, headers, body, cron_expression, is_active]
+    `INSERT INTO cron_jobs (name, url, method, headers, body, cron_expression, is_active, notify_on)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+    [name, url, method, headers, body, cron_expression, is_active, notify_on]
   );
 
   if (is_active) scheduleJob(rows[0]);
@@ -40,7 +40,7 @@ router.post('/', async (req, res) => {
 
 // PUT update job
 router.put('/:id', async (req, res) => {
-  const { name, url, method, headers, body, cron_expression, is_active } = req.body;
+  const { name, url, method, headers, body, cron_expression, is_active, notify_on } = req.body;
 
   if (cron_expression && !cron.validate(cron_expression)) {
     return res.status(400).json({ error: 'Invalid cron expression' });
@@ -54,9 +54,10 @@ router.put('/:id', async (req, res) => {
       headers = COALESCE($4, headers),
       body = COALESCE($5, body),
       cron_expression = COALESCE($6, cron_expression),
-      is_active = COALESCE($7, is_active)
-     WHERE id = $8 RETURNING *`,
-    [name, url, method, headers, body, cron_expression, is_active, req.params.id]
+      is_active = COALESCE($7, is_active),
+      notify_on = COALESCE($8, notify_on)
+     WHERE id = $9 RETURNING *`,
+    [name, url, method, headers, body, cron_expression, is_active, notify_on, req.params.id]
   );
 
   if (!rows.length) return res.status(404).json({ error: 'Job not found' });

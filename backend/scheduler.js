@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const axios = require('axios');
 const { pool } = require('./db');
+const { sendTelegram, buildMessage } = require('./telegram');
 
 const activeTasks = new Map();
 
@@ -30,10 +31,19 @@ const executeJob = async (job) => {
   }
 
   const duration = Date.now() - start;
+
+  // Log to DB
   await pool.query(
     `INSERT INTO execution_logs (job_id, status, status_code, response, duration_ms) VALUES ($1, $2, $3, $4, $5)`,
     [job.id, status, statusCode, response, duration]
   );
+
+  // Telegram bildirimi
+  const notify = job.notify_on || 'always';
+  const shouldNotify = notify === 'always' || (notify === 'error' && status === 'error');
+  if (shouldNotify) {
+    await sendTelegram(buildMessage(job, status, statusCode, duration, response));
+  }
 
   console.log(`[${new Date().toISOString()}] Job #${job.id} "${job.name}" → ${status} (${statusCode}) ${duration}ms`);
 };
@@ -45,7 +55,7 @@ const scheduleJob = (job) => {
   }
   const task = cron.schedule(job.cron_expression, () => executeJob(job));
   activeTasks.set(job.id, task);
-  console.log(`Scheduled job #${job.id} "${job.name}" with expression "${job.cron_expression}"`);
+  console.log(`Scheduled job #${job.id} "${job.name}" → "${job.cron_expression}"`);
 };
 
 const unscheduleJob = (jobId) => {

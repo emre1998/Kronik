@@ -16,8 +16,11 @@ const initDb = async () => {
       body TEXT,
       cron_expression VARCHAR(100) NOT NULL,
       is_active BOOLEAN DEFAULT true,
+      notify_on VARCHAR(20) DEFAULT 'always',
       created_at TIMESTAMP DEFAULT NOW()
     );
+
+    ALTER TABLE cron_jobs ADD COLUMN IF NOT EXISTS notify_on VARCHAR(20) DEFAULT 'always';
 
     CREATE TABLE IF NOT EXISTS execution_logs (
       id SERIAL PRIMARY KEY,

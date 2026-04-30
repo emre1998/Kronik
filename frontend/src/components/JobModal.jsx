@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
-import { X, Zap, ChevronDown } from 'lucide-react';
+import { X, Zap, ChevronDown, Bell } from 'lucide-react';
+
+const NOTIFY_OPTIONS = [
+  { value: 'always', label: '🔔 Her zaman', desc: 'Başarı ve hata' },
+  { value: 'error',  label: '🔴 Sadece hata', desc: 'Yalnızca başarısız olunca' },
+  { value: 'never',  label: '🔕 Kapalı', desc: 'Bildirim gönderme' },
+];
 
 const PRESETS = [
   { label: 'Her dakika', value: '* * * * *' },
@@ -11,7 +17,7 @@ const PRESETS = [
   { label: 'Her Pzt', value: '0 9 * * 1' },
 ];
 
-const DEFAULTS = { name: '', url: '', method: 'GET', headers: '', body: '', cron_expression: '*/5 * * * *', is_active: true };
+const DEFAULTS = { name: '', url: '', method: 'GET', headers: '', body: '', cron_expression: '*/5 * * * *', is_active: true, notify_on: 'always' };
 
 export default function JobModal({ job, onClose, onSave }) {
   const [form, setForm] = useState(DEFAULTS);
@@ -103,6 +109,22 @@ export default function JobModal({ job, onClose, onSave }) {
             </div>
           </Field>
 
+          <Field label={<><Bell size={12} style={{display:'inline',marginRight:4}} />Telegram Bildirimi</>}>
+            <div style={s.notifyGroup}>
+              {NOTIFY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  style={{ ...s.notifyBtn, ...(form.notify_on === opt.value ? s.notifyBtnOn : {}) }}
+                  onClick={() => set('notify_on', opt.value)}
+                >
+                  <span style={{ fontSize: 13 }}>{opt.label}</span>
+                  <span style={{ fontSize: 11, color: form.notify_on === opt.value ? '#a78bfa' : 'var(--t3)' }}>{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </Field>
+
           <Field label={<>Headers <span style={s.opt}>JSON, opsiyonel</span></>}>
             <textarea style={{ fontFamily: 'var(--mono)', fontSize: 12, resize: 'vertical' }} rows={3} placeholder={'{\n  "Authorization": "Bearer token"\n}'} value={form.headers} onChange={(e) => set('headers', e.target.value)} />
           </Field>
@@ -157,4 +179,7 @@ const s = {
   cancelBtn: { background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 20px', color: '#64748b', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, fontFamily: 'Inter, sans-serif' },
   saveBtn: { background: 'linear-gradient(135deg, #7c3aed, #a855f7)', border: 'none', borderRadius: 10, padding: '10px 24px', color: '#fff', cursor: 'pointer', fontSize: 13.5, fontWeight: 700, boxShadow: '0 4px 16px rgba(124,58,237,0.4)', fontFamily: 'Inter, sans-serif', minWidth: 100 },
   errorBox: { background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 10, padding: '10px 14px', color: '#fda4af', fontSize: 13 },
+  notifyGroup: { display: 'flex', flexDirection: 'column', gap: 6 },
+  notifyBtn: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s', textAlign: 'left' },
+  notifyBtnOn: { background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)' },
 };
