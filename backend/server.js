@@ -14,6 +14,7 @@ app.use(cors({
     'http://localhost:5173',
     'https://kronik-weld.vercel.app',
     /\.vercel\.app$/,
+    /\.netlify\.app$/,
   ],
   credentials: true,
 }));
