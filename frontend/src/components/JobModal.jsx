@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Zap, ChevronDown, Bell, Plus, Trash2 } from 'lucide-react';
+import { X, Zap, ChevronDown, Bell, Plus, Trash2, RefreshCw } from 'lucide-react';
 
 const NOTIFY_OPTIONS = [
   { value: 'always', label: '🔔 Her zaman', desc: 'Başarı ve hata' },
@@ -17,7 +17,7 @@ const PRESETS = [
   { label: 'Her Pzt', value: '0 9 * * 1' },
 ];
 
-const DEFAULTS = { name: '', url: '', method: 'GET', body: '', cron_expression: '*/5 * * * *', is_active: true, notify_on: 'always' };
+const DEFAULTS = { name: '', url: '', method: 'GET', body: '', cron_expression: '*/5 * * * *', is_active: true, notify_on: 'always', retry_enabled: false, retry_count: 2 };
 
 // headers objesini [{key, value}] dizisine çevir
 const objToRows = (obj) => {
@@ -179,6 +179,38 @@ export default function JobModal({ job, onClose, onSave }) {
             </div>
           </Field>
 
+          {/* Retry ayarları */}
+          <Field label={<><RefreshCw size={12} style={{display:'inline',marginRight:4}} />Otomatik Retry</>}>
+            <div style={s.retryWrap}>
+              <button
+                type="button"
+                style={{ ...s.toggleBtn, background: form.retry_enabled ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.04)', border: `1px solid ${form.retry_enabled ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.1)'}`, color: form.retry_enabled ? '#f59e0b' : '#475569' }}
+                onClick={() => set('retry_enabled', !form.retry_enabled)}
+              >
+                <span style={{ ...s.toggleDot, background: form.retry_enabled ? '#f59e0b' : '#475569' }} />
+                {form.retry_enabled ? 'Aktif' : 'Kapalı'}
+              </button>
+              {form.retry_enabled && (
+                <div style={s.retryCountWrap}>
+                  <span style={s.retryCountLabel}>Deneme sayısı</span>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {[2, 3].map((n) => (
+                      <button key={n} type="button"
+                        style={{ ...s.retryCountBtn, ...(form.retry_count === n ? s.retryCountBtnOn : {}) }}
+                        onClick={() => set('retry_count', n)}
+                      >
+                        {n}×
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            {form.retry_enabled && (
+              <p style={s.retryHint}>Hata alındığında 5 sn bekleyip tekrar dener. Her denemede Telegram bildirimi gönderilir.</p>
+            )}
+          </Field>
+
           {['POST','PUT','PATCH'].includes(form.method) && (
             <Field label={<>Body <span style={s.opt}>opsiyonel</span></>}>
               <textarea style={{ fontFamily: 'var(--mono)', fontSize: 12, resize: 'vertical' }} rows={4} placeholder={'{\n  "key": "value"\n}'} value={form.body} onChange={(e) => set('body', e.target.value)} />
@@ -240,6 +272,12 @@ const s = {
   kvDeleteBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: '0 6px', opacity: 0.5, transition: 'opacity 0.2s' },
   kvAddBtn: { display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: '9px 12px', color: '#7c3aed', fontSize: 12.5, fontWeight: 600, fontFamily: 'Inter, sans-serif', transition: 'color 0.2s' },
 
+  retryWrap: { display: 'flex', alignItems: 'center', gap: 12 },
+  retryCountWrap: { display: 'flex', alignItems: 'center', gap: 8 },
+  retryCountLabel: { fontSize: 12, color: '#64748b', fontWeight: 500 },
+  retryCountBtn: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '6px 14px', fontSize: 13, fontWeight: 600, color: '#475569', cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s' },
+  retryCountBtnOn: { background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', color: '#f59e0b' },
+  retryHint: { margin: 0, fontSize: 11.5, color: '#475569', lineHeight: 1.5 },
   notifyGroup: { display: 'flex', flexDirection: 'column', gap: 6 },
   notifyBtn: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)', cursor: 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.15s', textAlign: 'left' },
   notifyBtnOn: { background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)' },

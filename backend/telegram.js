@@ -32,4 +32,14 @@ const buildMessage = (job, status, statusCode, duration, response) => {
 ${response ? `\n💬 <b>Yanıt:</b>\n<code>${response.substring(0, 200)}</code>` : ''}`;
 };
 
-module.exports = { sendTelegram, buildMessage };
+const buildRetryMessage = (job, attempt, maxRetries) => {
+  const time = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
+  return `🔄 <b>Kronik — Yeniden Deneniyor (${attempt}/${maxRetries})</b>
+
+📌 <b>Job:</b> ${job.name}
+🌐 <b>URL:</b> <code>${job.url}</code>
+📡 <b>Method:</b> ${job.method}
+🕐 <b>Zaman:</b> ${time}`;
+};
+
+module.exports = { sendTelegram, buildMessage, buildRetryMessage };

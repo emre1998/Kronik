@@ -21,6 +21,8 @@ const initDb = async () => {
     );
 
     ALTER TABLE cron_jobs ADD COLUMN IF NOT EXISTS notify_on VARCHAR(20) DEFAULT 'always';
+    ALTER TABLE cron_jobs ADD COLUMN IF NOT EXISTS retry_enabled BOOLEAN DEFAULT false;
+    ALTER TABLE cron_jobs ADD COLUMN IF NOT EXISTS retry_count INTEGER DEFAULT 2;
 
     CREATE TABLE IF NOT EXISTS execution_logs (
       id SERIAL PRIMARY KEY,
