@@ -4,7 +4,7 @@ import { Play, Trash2, Edit2, Globe, Clock, Loader2 } from 'lucide-react';
 const METHOD = {
   GET:    { color: '#10b981', bg: 'rgba(16,185,129,0.1)',  border: 'rgba(16,185,129,0.25)' },
   POST:   { color: '#60a5fa', bg: 'rgba(96,165,250,0.1)',  border: 'rgba(96,165,250,0.25)' },
-  PUT:    { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.25)' },
+  PUT:    { color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)',  border: 'rgba(139,92,246,0.25)' },
   PATCH:  { color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.25)' },
   DELETE: { color: '#f87171', bg: 'rgba(248,113,113,0.1)', border: 'rgba(248,113,113,0.25)' },
 };
@@ -28,13 +28,13 @@ export default function JobCard({ job, onEdit, onDelete, onTrigger, onToggle, on
       onClick={() => onClick(job)}
       style={{
         background: hovered ? 'var(--card2)' : 'var(--card)',
-        border: `1px solid ${hovered ? 'rgba(245,158,11,0.2)' : 'var(--border)'}`,
+        border: `1px solid ${hovered ? 'rgba(139,92,246,0.2)' : 'var(--border)'}`,
         borderLeft: `3px solid ${job.is_active ? m.color : 'var(--t4)'}`,
         borderRadius: 12,
         cursor: 'pointer',
         transition: 'all 0.2s cubic-bezier(.4,0,.2,1)',
         transform: hovered ? 'translateY(-2px)' : 'none',
-        boxShadow: hovered ? `0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(245,158,11,0.08)` : '0 2px 8px rgba(0,0,0,0.2)',
+        boxShadow: hovered ? `0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(139,92,246,0.08)` : '0 2px 8px rgba(0,0,0,0.2)',
         overflow: 'hidden',
       }}
     >
