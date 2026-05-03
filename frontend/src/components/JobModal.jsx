@@ -244,12 +244,12 @@ function Field({ label, children }) {
 }
 
 const s = {
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 },
-  modal: { background: '#0d0d18', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, width: '100%', maxWidth: 560, maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(124,58,237,0.1)' },
-  glowEdge: { position: 'absolute', top: 0, left: '20%', right: '20%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(124,58,237,0.6), transparent)' },
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px 12px' },
+  modal: { background: '#0d1117', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 18, width: '100%', maxWidth: 560, maxHeight: '92vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative', boxShadow: '0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(99,102,241,0.08)' },
+  glowEdge: { position: 'absolute', top: 0, left: '20%', right: '20%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.7), transparent)' },
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 22px', borderBottom: '1px solid rgba(255,255,255,0.06)' },
   headerLeft: { display: 'flex', alignItems: 'center', gap: 10 },
-  headerIcon: { width: 28, height: 28, background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  headerIcon: { width: 28, height: 28, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' },
   title: { fontWeight: 700, fontSize: 15.5, color: '#f8fafc' },
   closeBtn: { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', color: '#475569', display: 'flex', padding: 6, borderRadius: 8 },
   body: { padding: '20px 22px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 },
@@ -283,6 +283,6 @@ const s = {
   notifyBtnOn: { background: 'rgba(124,58,237,0.12)', border: '1px solid rgba(124,58,237,0.3)' },
   footer: { display: 'flex', gap: 10, padding: '16px 22px', borderTop: '1px solid rgba(255,255,255,0.06)', justifyContent: 'flex-end' },
   cancelBtn: { background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: '10px 20px', color: '#64748b', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, fontFamily: 'Inter, sans-serif' },
-  saveBtn: { background: 'linear-gradient(135deg, #7c3aed, #a855f7)', border: 'none', borderRadius: 10, padding: '10px 24px', color: '#fff', cursor: 'pointer', fontSize: 13.5, fontWeight: 700, boxShadow: '0 4px 16px rgba(124,58,237,0.4)', fontFamily: 'Inter, sans-serif', minWidth: 100 },
+  saveBtn: { background: 'linear-gradient(135deg, #6366f1, #818cf8)', border: 'none', borderRadius: 10, padding: '10px 24px', color: '#fff', cursor: 'pointer', fontSize: 13.5, fontWeight: 700, boxShadow: '0 4px 16px rgba(99,102,241,0.4)', fontFamily: 'var(--ui)', minWidth: 100 },
   errorBox: { background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: 10, padding: '10px 14px', color: '#fda4af', fontSize: 13 },
 };
