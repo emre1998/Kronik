@@ -68,7 +68,7 @@ body {
 .hamburger span { display: block; width: 18px; height: 1.5px; background: var(--t2); border-radius: 2px; }
 
 /* ── Stats bar ── */
-.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); }
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--border); max-width: 100%; }
 .stat-box { padding: 14px 18px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; transition: background 0.2s; }
 .stat-box:last-child { border-right: none; }
 .stat-box:hover { background: var(--card); }
@@ -83,7 +83,7 @@ body {
 .breadcrumb-cur { color: var(--accent); }
 
 /* ── Grid ── */
-.job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; padding: 16px 20px; }
+.job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 360px)); justify-content: start; gap: 10px; padding: 16px 20px; max-width: 1320px; }
 
 /* ── Buttons ── */
 .btn-new { display: flex; align-items: center; gap: 6px; background: var(--accent); border: none; border-radius: 8px; padding: 8px 16px; color: #fff; font-family: var(--body); font-size: 12.5px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 12px rgba(139,92,246,0.25); transition: all 0.2s; white-space: nowrap; }
@@ -138,7 +138,34 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+@keyframes slideIn { from { opacity:0; transform:translateY(16px) scale(0.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes typing { 0%,60%,100%{opacity:1} 30%{opacity:0.3} }
 .fade-up { animation: fadeUp 0.28s ease both; }
+
+/* ── AI Button ── */
+.btn-ai { display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(167,139,250,0.1)); border: 1px solid rgba(139,92,246,0.35); border-radius: 8px; padding: 8px 14px; color: var(--accent2); font-family: var(--body); font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.btn-ai:hover { background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(167,139,250,0.18)); border-color: rgba(139,92,246,0.55); transform: translateY(-1px); }
+
+/* ── AI Chat Modal ── */
+.ai-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); z-index: 1000; display: flex; align-items: flex-end; justify-content: flex-end; padding: 16px; }
+.ai-modal { width: 420px; height: 600px; background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; animation: slideIn 0.3s cubic-bezier(.4,0,.2,1); box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(139,92,246,0.1); }
+.ai-modal-head { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--border); background: var(--card); flex-shrink: 0; }
+.ai-avatar { width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ai-modal-messages { flex: 1; overflow-y: auto; padding: 14px 14px 8px; display: flex; flex-direction: column; gap: 10px; }
+.ai-msg { max-width: 85%; padding: 10px 13px; border-radius: 12px; font-size: 13px; line-height: 1.55; word-break: break-word; animation: fadeUp 0.2s ease; }
+.ai-msg.assistant { background: var(--card2); border: 1px solid var(--border); color: var(--t1); border-bottom-left-radius: 4px; align-self: flex-start; }
+.ai-msg.user { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; align-self: flex-end; }
+.ai-typing { display: flex; gap: 4px; align-items: center; padding: 10px 13px; background: var(--card2); border: 1px solid var(--border); border-radius: 12px; border-bottom-left-radius: 4px; width: fit-content; }
+.ai-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--t3); animation: typing 1.2s ease infinite; }
+.ai-typing span:nth-child(2) { animation-delay: 0.2s; }
+.ai-typing span:nth-child(3) { animation-delay: 0.4s; }
+.ai-job-preview { margin: 4px 0; padding: 10px 13px; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); border-radius: 10px; font-size: 12px; color: var(--t2); align-self: flex-start; max-width: 95%; width: 95%; }
+.ai-modal-input { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--card); flex-shrink: 0; }
+.ai-input { flex: 1; background: var(--card2); border: 1px solid var(--border2); border-radius: 10px; padding: 9px 12px; color: var(--t1); font-size: 13px; font-family: var(--body); outline: none; resize: none; max-height: 80px; transition: border-color 0.2s; }
+.ai-input:focus { border-color: var(--accent); }
+.ai-send { width: 36px; height: 36px; border-radius: 10px; background: var(--accent); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+.ai-send:hover { background: var(--accent2); transform: translateY(-1px); }
+.ai-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 /* ── Inputs ── */
 input, select, textarea { font-family: var(--body); background: var(--card2); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 12px; color: var(--t1); font-size: 13px; width: 100%; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }

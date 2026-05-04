@@ -5,6 +5,7 @@ const { initDb } = require('./db');
 const { loadAllJobs } = require('./scheduler');
 const jobsRouter = require('./routes/jobs');
 const logsRouter = require('./routes/logs');
+const aiRouter = require('./routes/ai');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,6 +24,7 @@ app.use(express.json());
 
 app.use('/api/jobs', jobsRouter);
 app.use('/api/logs', logsRouter);
+app.use('/api/ai', aiRouter);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 

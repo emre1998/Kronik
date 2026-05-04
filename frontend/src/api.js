@@ -11,3 +11,4 @@ export const deleteJob = (id) => api.delete(`/api/jobs/${id}`);
 export const triggerJob = (id) => api.post(`/api/jobs/${id}/trigger`);
 export const getLogs = () => api.get('/api/logs');
 export const getJobLogs = (id) => api.get(`/api/logs/job/${id}`);
+export const aiChat = (messages) => api.post('/api/ai/chat', { messages });

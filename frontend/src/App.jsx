@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, RefreshCw, Activity, Clock, CheckCircle, XCircle, Zap, TrendingUp, Menu } from 'lucide-react';
+import { Plus, RefreshCw, Activity, Clock, CheckCircle, XCircle, Zap, TrendingUp, Sparkles } from 'lucide-react';
 import JobCard from './components/JobCard';
 import JobModal from './components/JobModal';
 import LogsPanel from './components/LogsPanel';
+import AIChatModal from './components/AIChatModal';
 import { getJobs, createJob, updateJob, deleteJob, triggerJob, getLogs } from './api';
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
   const [tab, setTab] = useState('jobs');
   const [refreshing, setRefreshing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   const fetchAll = useCallback(async () => {
     const [j, l] = await Promise.all([getJobs(), getLogs()]);
@@ -29,6 +31,7 @@ export default function App() {
   const handleTrigger = async (id) => { await triggerJob(id); setTimeout(fetchAll, 800); };
   const handleToggle = async (job) => { await updateJob(job.id, { is_active: !job.is_active }); fetchAll(); };
   const switchTab = (t) => { setTab(t); setSidebarOpen(false); };
+  const handleAICreate = async (jobData) => { await createJob(jobData); fetchAll(); };
 
   const active = jobs.filter(j => j.is_active).length;
   const success = logs.filter(l => l.status === 'success').length;
@@ -105,9 +108,14 @@ export default function App() {
               <RefreshCw size={14} style={{ animation: refreshing ? 'spin 0.6s linear' : 'none' }} />
             </button>
             {tab === 'jobs' && (
-              <button className="btn-new" style={{ padding: '8px 14px', fontSize: 12 }} onClick={() => { setEditingJob(null); setModalOpen(true); }}>
-                <Plus size={14} /> Yeni
-              </button>
+              <>
+                <button className="btn-ai" style={{ padding: '8px 12px', fontSize: 12 }} onClick={() => setAiOpen(true)}>
+                  <Sparkles size={13} /> AI
+                </button>
+                <button className="btn-new" style={{ padding: '8px 14px', fontSize: 12 }} onClick={() => { setEditingJob(null); setModalOpen(true); }}>
+                  <Plus size={14} /> Yeni
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -143,9 +151,14 @@ export default function App() {
               <RefreshCw size={14} style={{ animation: refreshing ? 'spin 0.6s linear' : 'none' }} />
             </button>
             {tab === 'jobs' && (
-              <button className="btn-new" onClick={() => { setEditingJob(null); setModalOpen(true); }}>
-                <Plus size={15} /> Yeni Job
-              </button>
+              <>
+                <button className="btn-ai" onClick={() => setAiOpen(true)}>
+                  <Sparkles size={14} /> AI ile Oluştur
+                </button>
+                <button className="btn-new" onClick={() => { setEditingJob(null); setModalOpen(true); }}>
+                  <Plus size={15} /> Yeni Job
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -218,6 +231,7 @@ export default function App() {
 
       {modalOpen && <JobModal job={editingJob} onClose={() => { setModalOpen(false); setEditingJob(null); }} onSave={handleSave} />}
       {selectedJob && <LogsPanel job={selectedJob} onClose={() => setSelectedJob(null)} />}
+      {aiOpen && <AIChatModal onClose={() => setAiOpen(false)} onCreateJob={handleAICreate} />}
     </div>
   );
 }
