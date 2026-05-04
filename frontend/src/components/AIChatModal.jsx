@@ -1,26 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, Send, Sparkles, CheckCircle, Bot } from 'lucide-react';
+import { X, Send, Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
 import { aiChat } from '../api';
 
-const WELCOME = 'Merhaba! 👋 Ben Kronik AI. Sana bir cron job oluşturmana yardım edeceğim.\n\nNe yapmak istiyorsun? Örneğin: "Her gün sabah 9\'da şu API\'ye istek at" şeklinde açıklayabilirsin.';
+const WELCOME = 'Merhaba! 👋 Ben Kronik AI. Sana bir cron job oluşturmana yardım edeceğim.\n\nNe yapmak istiyorsun? Örneğin: "Her gün sabah 9\'da şu API\'ye GET isteği at" şeklinde anlat.';
+
+const NOTIFY_LABELS = { always: 'Her zaman', error: 'Sadece hata', never: 'Hiç' };
 
 export default function AIChatModal({ onClose, onCreateJob }) {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: WELCOME },
-  ]);
+  const [messages, setMessages] = useState([{ role: 'assistant', content: WELCOME }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [pendingJob, setPendingJob] = useState(null);
+  const [createError, setCreateError] = useState('');
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+  }, [messages, loading, pendingJob]);
 
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+  useEffect(() => { inputRef.current?.focus(); }, []);
 
   const send = async () => {
     const text = input.trim();
@@ -28,45 +28,56 @@ export default function AIChatModal({ onClose, onCreateJob }) {
 
     const userMsg = { role: 'user', content: text };
     const nextMessages = [...messages, userMsg];
-
     setMessages(nextMessages);
     setInput('');
     setLoading(true);
     setPendingJob(null);
+    setCreateError('');
 
     try {
-      // Only send the actual conversation (skip the welcome message since it's local)
-      const apiMessages = nextMessages.filter(m => !(m.role === 'assistant' && m.content === WELCOME));
+      // Filter out the local welcome message before sending to API
+      const apiMessages = nextMessages.filter(
+        m => !(m.role === 'assistant' && m.content === WELCOME)
+      );
       const res = await aiChat(apiMessages);
       const { content, jobReady, jobData } = res.data;
 
       setMessages(prev => [...prev, { role: 'assistant', content }]);
-
-      if (jobReady && jobData) {
-        setPendingJob(jobData);
-      }
-    } catch (err) {
+      if (jobReady && jobData) setPendingJob(jobData);
+    } catch {
       setMessages(prev => [
         ...prev,
         { role: 'assistant', content: '⚠️ Bir hata oluştu. Lütfen tekrar dene.' },
       ]);
     } finally {
       setLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 100);
+      setTimeout(() => inputRef.current?.focus(), 80);
     }
   };
 
   const handleKey = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
-  const handleCreate = () => {
-    if (!pendingJob) return;
-    onCreateJob(pendingJob);
-    onClose();
+  const handleCreate = async () => {
+    if (!pendingJob || creating) return;
+    setCreating(true);
+    setCreateError('');
+    try {
+      await onCreateJob(pendingJob);
+      // Show success then close
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: '✅ Job başarıyla oluşturuldu! Artık dashboard\'da görünüyor.' },
+      ]);
+      setPendingJob(null);
+      setTimeout(onClose, 1800);
+    } catch (err) {
+      const msg = err?.response?.data?.error || 'Job oluşturulamadı. Lütfen tekrar dene.';
+      setCreateError(msg);
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -86,10 +97,7 @@ export default function AIChatModal({ onClose, onCreateJob }) {
               Çevrimiçi · llama-3.1-8b
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--t3)', display: 'flex' }}
-          >
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--t3)', display: 'flex' }}>
             <X size={16} />
           </button>
         </div>
@@ -98,8 +106,8 @@ export default function AIChatModal({ onClose, onCreateJob }) {
         <div className="ai-modal-messages">
           {messages.map((msg, i) => (
             <div key={i} className={`ai-msg ${msg.role}`}>
-              {msg.content.split('\n').map((line, j) => (
-                <span key={j}>{line}{j < msg.content.split('\n').length - 1 && <br />}</span>
+              {msg.content.split('\n').map((line, j, arr) => (
+                <span key={j}>{line}{j < arr.length - 1 && <br />}</span>
               ))}
             </div>
           ))}
@@ -115,24 +123,57 @@ export default function AIChatModal({ onClose, onCreateJob }) {
               <div style={{ fontWeight: 700, color: 'var(--success)', marginBottom: 8, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 ✅ Job Hazır
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 12 }}>
                 {[
-                  ['Ad', pendingJob.name],
-                  ['URL', pendingJob.url],
-                  ['Method', pendingJob.method],
-                  ['Schedule', pendingJob.cron_expression],
-                ].map(([k, v]) => (
-                  <div key={k} style={{ display: 'flex', gap: 6 }}>
-                    <span style={{ color: 'var(--t3)', width: 56, flexShrink: 0 }}>{k}:</span>
-                    <span style={{ color: 'var(--t1)', fontFamily: k === 'URL' || k === 'Schedule' ? 'var(--mono)' : 'inherit', fontSize: k === 'URL' ? 11 : 12, wordBreak: 'break-all' }}>{v}</span>
+                  ['Ad', pendingJob.name, false],
+                  ['URL', pendingJob.url, true],
+                  ['Method', pendingJob.method, false],
+                  ['Schedule', pendingJob.cron_expression, true],
+                  ['Bildirim', NOTIFY_LABELS[pendingJob.notify_on] || 'Her zaman', false],
+                ].map(([k, v, mono]) => (
+                  <div key={k} style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                    <span style={{ color: 'var(--t3)', width: 60, flexShrink: 0, fontSize: 11 }}>{k}:</span>
+                    <span style={{
+                      color: 'var(--t1)',
+                      fontFamily: mono ? 'var(--mono)' : 'inherit',
+                      fontSize: mono ? 11 : 12,
+                      wordBreak: 'break-all',
+                    }}>{v}</span>
                   </div>
                 ))}
               </div>
+
+              {createError && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 10px', background: 'var(--error-bg)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 7, marginBottom: 8, fontSize: 12, color: 'var(--error)' }}>
+                  <AlertCircle size={13} /> {createError}
+                </div>
+              )}
+
               <button
                 onClick={handleCreate}
-                style={{ marginTop: 12, width: '100%', padding: '9px', background: 'var(--success)', border: 'none', borderRadius: 8, color: '#fff', fontFamily: 'var(--body)', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' }}
+                disabled={creating}
+                style={{
+                  width: '100%',
+                  padding: '9px',
+                  background: creating ? 'rgba(16,185,129,0.5)' : 'var(--success)',
+                  border: 'none',
+                  borderRadius: 8,
+                  color: '#fff',
+                  fontFamily: 'var(--body)',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: creating ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  transition: 'all 0.2s',
+                }}
               >
-                <CheckCircle size={14} /> Job'u Oluştur
+                {creating
+                  ? <><span style={{ width: 13, height: 13, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} /> Oluşturuluyor…</>
+                  : <><CheckCircle size={14} /> Job'u Oluştur</>
+                }
               </button>
             </div>
           )}
@@ -148,15 +189,11 @@ export default function AIChatModal({ onClose, onCreateJob }) {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Mesajınızı yazın… (Enter ile gönder)"
+            placeholder="Mesajınızı yazın… (Enter gönder, Shift+Enter satır)"
             rows={1}
             disabled={loading}
           />
-          <button
-            className="ai-send"
-            onClick={send}
-            disabled={!input.trim() || loading}
-          >
+          <button className="ai-send" onClick={send} disabled={!input.trim() || loading}>
             <Send size={14} color="#fff" />
           </button>
         </div>

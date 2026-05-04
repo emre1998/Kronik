@@ -31,7 +31,10 @@ export default function App() {
   const handleTrigger = async (id) => { await triggerJob(id); setTimeout(fetchAll, 800); };
   const handleToggle = async (job) => { await updateJob(job.id, { is_active: !job.is_active }); fetchAll(); };
   const switchTab = (t) => { setTab(t); setSidebarOpen(false); };
-  const handleAICreate = async (jobData) => { await createJob(jobData); fetchAll(); };
+  const handleAICreate = async (jobData) => {
+    await createJob(jobData); // throws on error, AIChatModal catches it
+    fetchAll();
+  };
 
   const active = jobs.filter(j => j.is_active).length;
   const success = logs.filter(l => l.status === 'success').length;

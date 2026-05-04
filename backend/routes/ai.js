@@ -7,16 +7,16 @@ const GROQ_MODEL = 'llama-3.1-8b-instant';
 
 const SYSTEM_PROMPT = `Sen "Kronik" adlı bir cron job yönetim sisteminin AI asistanısın. Türkçe konuşuyorsun. Amacın kullanıcının bir HTTP cron job oluşturmasına yardımcı olmak.
 
-Görevin: Kullanıcıdan aşağıdaki bilgileri samimi ve kısa sorularla topla:
+Görevin: Kullanıcıdan sırayla şu bilgileri kısa sorularla topla:
 1. name: Job'un adı (anlamlı, kısa)
 2. url: Çağrılacak HTTP URL
-3. method: HTTP metodu (GET, POST, PUT, PATCH, DELETE)
-4. cron_expression: Cron ifadesi
-5. headers: HTTP başlıkları (opsiyonel - örn: Authorization token)
-6. body: İstek gövdesi (opsiyonel - POST/PUT/PATCH için)
+3. method: HTTP metodu (GET, POST, PUT, PATCH, DELETE) — URL'e göre tahmin edebilirsin
+4. cron_expression: Ne sıklıkla çalışsın?
+5. notify_on: Telegram bildirimi — "Her zaman mı, sadece hata olunca mı, yoksa hiç istemiyor musun?" diye sor. Cevaba göre: her zaman → "always", sadece hata → "error", hiç → "never"
+6. headers: HTTP başlıkları gerekiyor mu? (opsiyonel, kullanıcı hayır derse geç)
+7. body: POST/PUT/PATCH için gövde gerekiyor mu? (opsiyonel)
 
-CRON İFADESİ YARDIMI:
-Kullanıcı saatini/periyodunu Türkçe söylüyorsa sen çevir:
+CRON İFADESİ YARDIMI (kullanıcının Türkçe ifadesini cron'a çevir):
 - Her dakika → * * * * *
 - Her saat başı → 0 * * * *
 - Her gün sabah 9 → 0 9 * * *
@@ -25,20 +25,27 @@ Kullanıcı saatini/periyodunu Türkçe söylüyorsa sen çevir:
 - Her ayın 1'i sabah 8 → 0 8 1 * *
 - Her 5 dakikada bir → */5 * * * *
 - Her 30 dakikada bir → */30 * * * *
+- Her 2 saatte bir → 0 */2 * * *
 
 DAVRANIŞLAR:
 - Kısa ve net konuş, gereksiz uzatma
-- Tüm zorunlu alanlar (name, url, method, cron_expression) toplandığında iş oluşturmaya hazır olduğunu söyle ve MUTLAKA aşağıdaki marker'ı ver
-- Headers ve body hakkında kısaca sor, kullanıcı "hayır" veya boş bırakırsa geç
-- URL geçersiz görünüyorsa uyar
+- Bir seferde tek soru sor
+- Tüm alanlar tamamlandığında özet yaz ve KRONIK_JOB_READY marker'ını ver
 
-TAMAMLANDIĞINDA tam olarak şu formatta yaz (başka şey ekleme marker'a):
-KRONIK_JOB_READY:{"name":"...","url":"...","method":"...","cron_expression":"...","headers":{},"body":null}
+TAMAMLANDIĞINDA şu formatta yaz (JSON tek satırda, tüm alanlar dolu):
+KRONIK_JOB_READY:{"name":"...","url":"...","method":"...","cron_expression":"...","notify_on":"always","headers":{},"body":null}
 
-Marker'dan önce kullanıcıya kısa bir özet yaz. Örnek:
-"Harika! İşte oluşturacağım job:\n📌 Ad: ...\n🌐 URL: ...\n📡 Method: ...\n⏰ Schedule: her gün sabah 9\n\nOnaylıyor musun?"
+Marker'dan önce kısa özet yaz:
+"Harika! İşte oluşturacağım job:
+📌 Ad: ...
+🌐 URL: ...
+📡 Method: ...
+⏰ Schedule: ...
+🔔 Bildirim: ...
 
-Sonra KRONIK_JOB_READY marker'ı yaz.`;
+Onaylamak için aşağıdaki butona tıkla 👇"
+
+SONRA hemen KRONIK_JOB_READY:{...} yaz. Başka hiçbir şey ekleme marker'dan sonra.`;
 
 router.post('/chat', async (req, res) => {
   const { messages } = req.body;
@@ -75,15 +82,29 @@ router.post('/chat', async (req, res) => {
 
     const content = response.data.choices[0].message.content;
 
-    // Check if job data is ready
-    const jobReadyMatch = content.match(/KRONIK_JOB_READY:(\{[\s\S]*?\})/);
-    if (jobReadyMatch) {
-      try {
-        const jobData = JSON.parse(jobReadyMatch[1]);
-        const textBefore = content.replace(/KRONIK_JOB_READY:\{[\s\S]*?\}/, '').trim();
-        return res.json({ content: textBefore, jobReady: true, jobData });
-      } catch (parseErr) {
-        console.error('Job data parse error:', parseErr.message);
+    // Robust JSON extraction using bracket counting
+    const markerStr = 'KRONIK_JOB_READY:';
+    const markerIdx = content.indexOf(markerStr);
+
+    if (markerIdx !== -1) {
+      const jsonStart = markerIdx + markerStr.length;
+      let depth = 0, jsonEnd = -1;
+      for (let i = jsonStart; i < content.length; i++) {
+        if (content[i] === '{') depth++;
+        else if (content[i] === '}') {
+          depth--;
+          if (depth === 0) { jsonEnd = i; break; }
+        }
+      }
+
+      if (jsonEnd !== -1) {
+        try {
+          const jobData = JSON.parse(content.slice(jsonStart, jsonEnd + 1));
+          const textBefore = content.slice(0, markerIdx).trim();
+          return res.json({ content: textBefore, jobReady: true, jobData });
+        } catch (parseErr) {
+          console.error('Job data parse error:', parseErr.message, content.slice(jsonStart, jsonEnd + 1));
+        }
       }
     }
 
